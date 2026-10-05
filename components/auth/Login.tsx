@@ -6,8 +6,24 @@ import { ArrowLeft, Globe2, LockKeyhole, UserRound } from 'lucide-react';
 import type { User } from '@supabase/supabase-js';
 import { clientSupabase } from '@/lib/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
+import { templateDefinitions } from '@/lib/pricing';
 
 type Mode = 'login' | 'signup';
+
+function projectReturnPath() {
+  const requested = new URLSearchParams(window.location.search).get('next');
+  if (!requested) return '/builder';
+  try {
+    const target = new URL(requested, window.location.origin);
+    if (target.origin !== window.location.origin || target.pathname !== '/builder') return '/builder';
+    const template = target.searchParams.get('template');
+    return template && templateDefinitions.some(entry => entry.id === template)
+      ? `/builder?template=${encodeURIComponent(template)}`
+      : '/builder';
+  } catch {
+    return '/builder';
+  }
+}
 
 export function Login({ initialMode = 'login' }: { initialMode?: Mode }) {
   const router = useRouter();
@@ -63,7 +79,7 @@ export function Login({ initialMode = 'login' }: { initialMode?: Mode }) {
       }
       setPassword('');
       setNotice(t('تم تسجيل الدخول بنجاح.', 'You are signed in.'));
-      router.replace('/builder'); router.refresh();
+      router.replace(projectReturnPath()); router.refresh();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : t('تعذر إكمال العملية.', 'Could not complete this step.'));
     } finally { setBusy(false); }
