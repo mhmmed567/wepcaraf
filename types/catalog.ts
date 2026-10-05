@@ -1,0 +1,1 @@
+export type CatalogComponent={id:string;category:'nav'|'hero'|'footer'|'section';kind:string;name:string;description:string;variant:number;title:string;body:string;visible:boolean;order:number;group:string};

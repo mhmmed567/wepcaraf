@@ -1,0 +1,4 @@
+export type Locale = 'ar' | 'en';
+export type Palette = { id: string; name: string; primary: string; secondary: string; accent: string; background: string; text: string };
+export type Section = { id: string; kind: string; variant: number; title: string; body: string; image?: string; visible: boolean };
+export type Design = { version: 1; projectName: string; siteType: string; locale: Locale; palette: Palette; font: string; headingScale: number; fontWeight: number; letterSpacing: number; navbar: number; hero: number; heroTitle: string; heroBody: string; heroImage: string; buttonLabel: string; sections: Section[]; buttonStyle: string; cardStyle: string; radius: number; shadow: number; footer: number; footerTagline?: string; contactEmail?: string; contactPhone?: string; motion: string; pages: string[] };

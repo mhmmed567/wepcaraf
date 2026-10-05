@@ -1,0 +1,15 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { UserPlus, X } from 'lucide-react';
+import { accessToken } from '@/lib/supabase/client';
+
+type Member={user_id:string;email:string;role:string};
+export function ProjectMembers({projectId,role}:{projectId:string;role:'owner'|'editor'}){
+  const [open,setOpen]=useState(false),[members,setMembers]=useState<Member[]>([]),[email,setEmail]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+  async function load(){try{const token=await accessToken();const response=await fetch(`/api/projects/${projectId}/members`,{headers:{Authorization:`Bearer ${token}`},cache:'no-store'});const data=await response.json();if(!response.ok)throw Error(data.error);setMembers(data.members||[])}catch(caught){setMessage(caught instanceof Error?caught.message:'تعذر تحميل المتعاونين')}}
+  useEffect(()=>{if(open)void load()},[open]);
+  async function add(){if(!email.trim()||busy)return;setBusy(true);setMessage('');try{const token=await accessToken();const response=await fetch(`/api/projects/${projectId}/members`,{method:'POST',headers:{Authorization:`Bearer ${token}`,'Content-Type':'application/json'},body:JSON.stringify({email:email.trim()})});const data=await response.json();if(!response.ok)throw Error(data.error);setEmail('');setMessage('أُضيف المتعاون إلى المشروع');await load()}catch(caught){setMessage(caught instanceof Error?caught.message:'تعذرت إضافة المتعاون')}finally{setBusy(false)}}
+  async function remove(userId:string){if(busy)return;setBusy(true);setMessage('');try{const token=await accessToken();const response=await fetch(`/api/projects/${projectId}/members/${userId}`,{method:'DELETE',headers:{Authorization:`Bearer ${token}`}});const data=await response.json();if(!response.ok)throw Error(data.error);await load()}catch(caught){setMessage(caught instanceof Error?caught.message:'تعذرت إزالة المتعاون')}finally{setBusy(false)}}
+  return <><button className="members-trigger" onClick={()=>setOpen(true)}><UserPlus size={16}/> المتعاونون</button>{open&&<div className="members-overlay" onClick={()=>setOpen(false)}><section className="members-panel" role="dialog" aria-modal="true" aria-label="إدارة المتعاونين" onClick={e=>e.stopPropagation()}><header><div><span className="eyebrow">فريق المشروع</span><h2>المتعاونون</h2></div><button aria-label="إغلاق" onClick={()=>setOpen(false)}><X size={18}/></button></header><p>أضف بريد مستخدم لديه حساب في المنصة ليحرر التصميم معك.</p>{role==='owner'&&<div className="members-add"><input type="email" value={email} onChange={e=>setEmail(e.target.value)} onKeyDown={e=>e.key==='Enter'&&add()} placeholder="بريد المتعاون" dir="ltr"/><button onClick={add} disabled={busy||!email.trim()}>إضافة</button></div>}<div className="members-list">{members.map(member=><div key={member.user_id}><span>{member.email}</span><small>محرر</small>{role==='owner'&&<button onClick={()=>remove(member.user_id)} disabled={busy}>إزالة</button>}</div>)}{members.length===0&&<p>لا يوجد متعاونون بعد.</p>}</div>{message&&<p className="members-message" role="status">{message}</p>}</section></div>}</>;
+}
