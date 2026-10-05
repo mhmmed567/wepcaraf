@@ -20,7 +20,7 @@ export async function PATCH(req:Request,ctx:Context){
   const db=serviceDb();if(!db)return NextResponse.json({error:'قاعدة البيانات غير مهيأة'},{status:503});
   const user=await verifiedUser(req);if(!user)return NextResponse.json({error:'غير مصرح'},{status:401});
   const {id}=await ctx.params;if(!uuidPattern.test(id))return NextResponse.json({error:'معرّف غير صالح'},{status:400});
-  let raw:unknown;try{raw=await readJsonLimited(req)}catch(caught){const error=caught as JsonBodyError;return NextResponse.json({error:error.message},{status:error.status||400})}
+  let raw:unknown;try{raw=await readJsonLimited(req,4_000_000)}catch(caught){const error=caught as JsonBodyError;return NextResponse.json({error:error.message},{status:error.status||400})}
   const parsed=z.object({revision:z.number().int().min(1),design:designSchema}).safeParse(raw);
   if(!parsed.success)return NextResponse.json({error:'التصميم غير صالح'},{status:400});
   try{

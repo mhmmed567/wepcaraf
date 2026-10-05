@@ -8,7 +8,7 @@ import { accessToken, clientSupabase } from '@/lib/supabase/client';
 import { designSchema } from '@/lib/schemas/design';
 import type { Design } from '@/types/design';
 
-type Project={id:string;design:Design;revision:number;role:'owner'|'editor'};
+type Project={id:string;design:Design;revision:number;role:'owner'|'editor';updatedAt:string};
 export function ProjectEditor({id}:{id:string}){
   const client=useMemo(()=>clientSupabase(),[]),router=useRouter();
   const [project,setProject]=useState<Project|null>(null),[error,setError]=useState(''),[loading,setLoading]=useState(true);
@@ -22,5 +22,5 @@ export function ProjectEditor({id}:{id:string}){
   if(loading)return <div className="projects-state">جاري تحميل المشروع...</div>;
   if(error)return <div className="projects-state"><h2>{error}</h2><Link href="/builder">العودة إلى المشاريع</Link></div>;
   if(!project)return <div className="projects-state">جاري التحقق من تسجيل الدخول...</div>;
-  return <Builder key={project.id} projectId={project.id} initialDesign={project.design} initialRevision={project.revision} role={project.role}/>;
+  return <Builder key={project.id} projectId={project.id} initialDesign={project.design} initialRevision={project.revision} initialUpdatedAt={project.updatedAt} role={project.role}/>;
 }

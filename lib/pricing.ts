@@ -11,6 +11,7 @@ export const sitePricing = {
   'موقع شركة': { price: 320, pages: 5 },
   'عيادة طبية': { price: 380, pages: 5 },
   'عقارات': { price: 430, pages: 5 },
+  'موقع حجوزات': { price: 350, pages: 4 },
   'منصة تعليمية': { price: 480, pages: 5 },
   'متجر إلكتروني': { price: 590, pages: 5 },
   'موقع مخصص': { price: 650, pages: 5 },
@@ -24,6 +25,7 @@ export const siteTypeEnglish: Record<keyof typeof sitePricing, string> = {
   'موقع شركة': 'Company website',
   'عيادة طبية': 'Medical clinic',
   'عقارات': 'Real estate',
+  'موقع حجوزات': 'Booking website',
   'منصة تعليمية': 'Learning platform',
   'متجر إلكتروني': 'Online store',
   'موقع مخصص': 'Custom website',
@@ -38,6 +40,23 @@ export const addOnPricing = {
   content: 60,
   hostingYear: 70,
   careMonth: 25,
+} as const;
+
+export const featurePricing = {
+  whatsapp: { price: 15, ar: 'زر واتساب', en: 'WhatsApp button' },
+  contactForm: { price: 25, ar: 'نموذج تواصل', en: 'Contact form' },
+  booking: { price: 80, ar: 'نظام حجز', en: 'Booking system' },
+  payments: { price: 120, ar: 'الدفع الإلكتروني', en: 'Online payments' },
+  ecommerce: { price: 200, ar: 'التجارة الإلكترونية', en: 'E-commerce' },
+  login: { price: 80, ar: 'تسجيل دخول العملاء', en: 'Customer login' },
+  dashboard: { price: 150, ar: 'لوحة تحكم إدارية', en: 'Admin dashboard' },
+  multilingual: { price: 50, ar: 'لغتان للموقع', en: 'Arabic and English' },
+  seo: { price: 35, ar: 'تهيئة محركات البحث', en: 'SEO setup' },
+  maps: { price: 20, ar: 'خرائط جوجل', en: 'Google Maps' },
+  chat: { price: 20, ar: 'دردشة مباشرة', en: 'Live chat' },
+  blog: { price: 80, ar: 'مدونة', en: 'Blog' },
+  analytics: { price: 30, ar: 'تحليلات الزيارات', en: 'Analytics' },
+  email: { price: 25, ar: 'إشعارات البريد', en: 'Email notifications' },
 } as const;
 
 export const templateDefinitions = [
@@ -60,11 +79,17 @@ export function estimateDesign(design: Design) {
   const lines: { id: string; amount: number; ar: string; en: string }[] = [
     { id: 'base', amount: base.price, ar: 'القالب وتنفيذ الموقع', en: 'Template and website build' },
   ];
+  for (const feature of design.features ?? []) {
+    if (feature === 'ecommerce' && design.siteType === 'متجر إلكتروني') continue;
+    if (feature === 'booking' && ['مطعم أو كوفي', 'عيادة طبية', 'موقع حجوزات'].includes(design.siteType)) continue;
+    const item = featurePricing[feature];
+    lines.push({ id: `feature-${feature}`, amount: item.price, ar: item.ar, en: item.en });
+  }
   const extraPages = Math.max(0, design.pages.length - base.pages);
   if (extraPages) lines.push({ id: 'pages', amount: extraPages * addOnPricing.extraPage, ar: `${extraPages} صفحات إضافية`, en: `${extraPages} extra pages` });
   const kinds = new Set(design.sections.filter(section => section.visible).map(section => section.kind));
-  if (kinds.has('مدونة')) lines.push({ id: 'blog', amount: addOnPricing.blog, ar: 'مدونة', en: 'Blog' });
-  if (kinds.has('حجز موعد') && !['مطعم أو كوفي', 'عيادة طبية'].includes(design.siteType)) lines.push({ id: 'booking', amount: addOnPricing.booking, ar: 'نظام حجز', en: 'Booking module' });
+  if (kinds.has('مدونة') && !design.features?.includes('blog')) lines.push({ id: 'blog', amount: addOnPricing.blog, ar: 'مدونة', en: 'Blog' });
+  if (kinds.has('حجز موعد') && !design.features?.includes('booking') && !['مطعم أو كوفي', 'عيادة طبية', 'موقع حجوزات'].includes(design.siteType)) lines.push({ id: 'booking', amount: addOnPricing.booking, ar: 'نظام حجز', en: 'Booking module' });
   if ((kinds.has('شبكة منتجات') || kinds.has('عرض منتج')) && design.siteType !== 'متجر إلكتروني' && design.siteType !== 'منصة تعليمية') lines.push({ id: 'catalog', amount: addOnPricing.catalog, ar: 'كتالوج منتجات', en: 'Product catalog' });
   return { lines, total: lines.reduce((sum, line) => sum + line.amount, 0), includedPages: base.pages };
 }
