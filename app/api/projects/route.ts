@@ -11,12 +11,14 @@ const titleSchema=z.string().trim().min(1).max(160);
 export async function GET(req:Request){
   const db=serviceDb();if(!db)return NextResponse.json({error:'قاعدة البيانات غير مهيأة'},{status:503});
   const user=await verifiedUser(req);if(!user)return NextResponse.json({error:'سجّل الدخول أولًا'},{status:401});
-  const [owned,members]=await Promise.all([db.from('projects').select('id,title,revision,updated_at').eq('owner_id',user.id).order('updated_at',{ascending:false}).limit(100),db.from('project_members').select('project_id').eq('user_id',user.id).limit(100)]);
-  if(owned.error||members.error)return NextResponse.json({error:'تعذر تحميل المشاريع'},{status:500});
-  const ids=(members.data||[]).map(m=>m.project_id);
-  const shared=ids.length?await db.from('projects').select('id,title,revision,updated_at').in('id',ids):{data:[],error:null};
-  if(shared.error)return NextResponse.json({error:'تعذر تحميل المشاريع'},{status:500});
-  return NextResponse.json({projects:[...(owned.data||[]).map(p=>({...p,role:'owner'})),...(shared.data||[]).map(p=>({...p,role:'editor'}))]},{headers:{'Cache-Control':'no-store'}});
+  const url=new URL(req.url);
+  const limit=Math.max(1,Math.min(100,Math.trunc(Number(url.searchParams.get('limit')||100)||100)));
+  const page=Math.max(1,Math.min(1000,Math.trunc(Number(url.searchParams.get('page')||1)||1)));
+  const search=(url.searchParams.get('search')||'').trim().slice(0,80);
+  const {data,error}=await db.rpc('list_user_projects',{p_user_id:user.id,p_search:search.replace(/[%_]/g,''),p_limit:limit,p_offset:(page-1)*limit});
+  if(error)return NextResponse.json({error:'تعذر تحميل المشاريع'},{status:500});
+  const total=Number(data?.[0]?.total_count||0);
+  return NextResponse.json({projects:(data||[]).map(({owner_id,total_count,...project}:{owner_id:string;total_count:number;id:string;title:string;revision:number;updated_at:string})=>({...project,role:owner_id===user.id?'owner':'editor'})),total,nextPage:page*limit<total?page+1:null},{headers:{'Cache-Control':'no-store'}});
 }
 
 export async function POST(req:Request){

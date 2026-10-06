@@ -1,0 +1,1 @@
+export default function DashboardLoading() { return <div className="saas-route-skeleton" aria-label="جاري التحميل"><div className="saas-skeleton hero"/><div className="saas-skeleton cards"/><div className="saas-skeleton table"/></div>; }

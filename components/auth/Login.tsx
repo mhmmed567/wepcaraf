@@ -16,7 +16,7 @@ function projectReturnPath() {
   try {
     const target = new URL(requested, window.location.origin);
     if (target.origin !== window.location.origin) return '/account';
-    if (target.pathname === '/account' || target.pathname === '/admin' || target.pathname === '/admin/assets') return target.pathname;
+    if (target.pathname === '/account' || target.pathname === '/admin' || target.pathname === '/admin/assets' || target.pathname === '/dashboard' || target.pathname.startsWith('/dashboard/')) return target.pathname;
     if (target.pathname !== '/builder') return '/account';
     const template = target.searchParams.get('template');
     return template && templateDefinitions.some(entry => entry.id === template)
