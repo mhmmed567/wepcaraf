@@ -17,7 +17,7 @@ export function AuthMenu({ compact = false, language = 'ar' }: { compact?: boole
     const {data:{subscription}}=client.auth.onAuthStateChange(()=>{setTimeout(()=>void check(),0)});
     return ()=>{active=false;subscription.unsubscribe()};
   }, [client]);
-  return <Link href="/login" className={`auth-menu-link${compact ? ' compact' : ''}`} title={name || (language === 'en' ? 'Sign in' : 'تسجيل الدخول')}>
+  return <Link href={name ? '/account' : '/login'} className={`auth-menu-link${compact ? ' compact' : ''}`} title={name || (language === 'en' ? 'Sign in' : 'تسجيل الدخول')}>
     <CircleUserRound size={17}/><span>{name ? name.split('@')[0] : language === 'en' ? 'Sign in' : 'دخول'}</span>
   </Link>;
 }

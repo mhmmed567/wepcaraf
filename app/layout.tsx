@@ -3,6 +3,7 @@ import './globals.css';
 import './template-preview.css';
 import './auth.css';
 import './projects.css';
+import './workspace.css';
 export const metadata:Metadata={title:'WEBCRAFT | صمّم موقعك كما تتخيله',description:'كتالوج تفاعلي لتصميم موقعك خطوة بخطوة مع معاينة مباشرة لكل اختيار.',openGraph:{title:'WEBCRAFT — صمّم موقعك كما تتخيله',description:'اختر الألوان والتنسيقات والأقسام وشاهد تصور موقعك قبل برمجته.'}};
 const localFontCss = [
   ['light', '300'], ['regular', '400'], ['medium', '500 600'],
