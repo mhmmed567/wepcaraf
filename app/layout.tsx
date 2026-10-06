@@ -4,7 +4,7 @@ import './template-preview.css';
 import './auth.css';
 import './projects.css';
 import './workspace.css';
-export const metadata:Metadata={title:'WEBCRAFT | صمّم موقعك كما تتخيله',description:'كتالوج تفاعلي لتصميم موقعك خطوة بخطوة مع معاينة مباشرة لكل اختيار.',openGraph:{title:'WEBCRAFT — صمّم موقعك كما تتخيله',description:'اختر الألوان والتنسيقات والأقسام وشاهد تصور موقعك قبل برمجته.'}};
+export const metadata:Metadata={title:'WEBCRAFT | من فكرة إلى مشروع يعمل',description:'ابنِ موقعك بمحرر بصري، وأدر محتواه ومشاريعك وفريقك من مساحة عمل واحدة.',openGraph:{title:'WEBCRAFT — من فكرة إلى مشروع يعمل',description:'صمّم موقعك وأدر محتواه ومشاريعك من مكان واحد.'}};
 const localFontCss = [
   ['light', '300'], ['regular', '400'], ['medium', '500 600'],
   ['bold', '700 800'], ['black', '900'],
