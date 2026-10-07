@@ -8,9 +8,22 @@ export const runtime = 'nodejs';
 const profileInput = z.object({ name: z.string().trim().min(2).max(80) }).strict();
 
 export async function GET(req: Request) {
+  const db = serviceDb();
   const user = await verifiedUser(req);
   if (!user) return NextResponse.json({ error: 'سجّل الدخول أولًا' }, { status: 401 });
-  return NextResponse.json({ profile: { email: user.email, name: user.user_metadata?.full_name || '' } }, { headers: { 'Cache-Control': 'no-store' } });
+  if (!db) return NextResponse.json({ error: 'قاعدة البيانات غير مهيأة' }, { status: 503 });
+  const [projects, shared, requests, recent] = await Promise.all([
+    db.from('projects').select('id', { count: 'exact', head: true }).eq('owner_id', user.id),
+    db.from('project_members').select('project_id', { count: 'exact', head: true }).eq('user_id', user.id),
+    db.from('requests').select('id', { count: 'exact', head: true }).eq('client_id', user.id),
+    db.from('requests').select('id,project_id,status,created_at').eq('client_id', user.id).order('created_at', { ascending: false }).limit(8),
+  ]);
+  if (projects.error || shared.error || requests.error || recent.error) return NextResponse.json({ error: 'تعذر تحميل نشاط الحساب' }, { status: 500 });
+  return NextResponse.json({
+    profile: { email: user.email, name: user.user_metadata?.full_name || '' },
+    stats: { projects: projects.count || 0, shared: shared.count || 0, requests: requests.count || 0 },
+    recentRequests: recent.data || [],
+  }, { headers: { 'Cache-Control': 'no-store' } });
 }
 
 export async function PATCH(req: Request) {
